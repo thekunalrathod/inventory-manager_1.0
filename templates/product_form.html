@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} Product{% endblock %}
+{% block page_title %}{{ action }} Product{% endblock %}
+
+{% block content %}
+
+<div class="form-card">
+  <h3 style="margin-bottom:20px;color:#1a2a4a;">{{ action }} Product</h3>
+
+  {% if error %}
+  <div class="alert alert-danger">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Product Name *</label>
+        <input type="text" name="name" required placeholder="e.g. Running Shoes"
+               value="{{ product[1] if product else '' }}"/>
+      </div>
+      <div class="form-group">
+        <label>Category</label>
+        <input type="text" name="category" placeholder="e.g. Footwear, Electronics"
+               value="{{ product[2] if product else '' }}"/>
+      </div>
+      <div class="form-group">
+        <label>Price (Rs) *</label>
+        <input type="number" name="price" step="0.01" min="0" required placeholder="0.00"
+               value="{{ product[3] if product else '' }}"/>
+      </div>
+      <div class="form-group">
+        <label>Quantity *</label>
+        <input type="number" name="quantity" min="0" required placeholder="0"
+               value="{{ product[4] if product else '' }}"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Description</label>
+      <textarea name="description" rows="3" placeholder="Brief product description...">{{ product[6] if product else '' }}</textarea>
+    </div>
+
+    {% if product %}
+    <div style="background:#f0fdf4;padding:12px;border-radius:6px;margin-bottom:16px;font-size:13px;color:#065f46;">
+      Current Status: <strong>{{ product[5] }}</strong>
+      (will auto-update based on quantity)
+    </div>
+    {% endif %}
+
+    <div style="display:flex;gap:10px;">
+      <button type="submit" class="btn btn-primary">
+        {% if action == 'Add' %}Add Product{% else %}Save Changes{% endif %}
+      </button>
+      <a href="{{ url_for('products') }}" class="btn btn-secondary">Cancel</a>
+    </div>
+  </form>
+</div>
+
+{% endblock %}

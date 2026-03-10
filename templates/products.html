@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Products{% endblock %}
+{% block page_title %}Products{% endblock %}
+
+{% block content %}
+
+<!-- SEARCH & FILTER -->
+<form method="GET" action="{{ url_for('products') }}">
+  <div class="search-bar">
+    <input type="text" name="search" placeholder="Search by name, category..." value="{{ search }}"/>
+    <select name="category">
+      <option value="">All Categories</option>
+      {% for cat in categories %}
+        <option value="{{ cat }}" {% if cat==selected_category %}selected{% endif %}>{{ cat }}</option>
+      {% endfor %}
+    </select>
+    <select name="status">
+      <option value="">All Status</option>
+      <option value="In Stock"     {% if selected_status=='In Stock'     %}selected{% endif %}>In Stock</option>
+      <option value="Low Stock"    {% if selected_status=='Low Stock'    %}selected{% endif %}>Low Stock</option>
+      <option value="Out of Stock" {% if selected_status=='Out of Stock' %}selected{% endif %}>Out of Stock</option>
+    </select>
+    <button type="submit" class="btn btn-primary">Search</button>
+    <a href="{{ url_for('products') }}" class="btn btn-secondary">Clear</a>
+    <a href="{{ url_for('add_product') }}" class="btn btn-primary" style="margin-left:auto;">+ Add Product</a>
+  </div>
+</form>
+
+<!-- PRODUCTS TABLE -->
+<div class="card">
+  <div class="card-header">
+    <h3>All Products <span style="font-weight:400;color:#9ca3af;font-size:13px;">({{ products|length }} items)</span></h3>
+    <div style="display:flex;gap:8px;">
+      <a href="{{ url_for('export_to_excel') }}" class="btn btn-sm btn-secondary">⬇ Excel</a>
+      <a href="{{ url_for('export_to_pdf') }}"   class="btn btn-sm btn-secondary">⬇ PDF</a>
+    </div>
+  </div>
+
+  {% if products %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Product Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for p in products %}
+      <tr>
+        <td style="color:#9ca3af">{{ p[0] }}</td>
+        <td>
+          <strong>{{ p[1] }}</strong>
+          {% if p[6] %}<br><small style="color:#9ca3af">{{ p[6][:50] }}{% if p[6]|length > 50 %}...{% endif %}</small>{% endif %}
+        </td>
+        <td><span style="background:#e0f2fe;color:#0369a1;padding:2px 8px;border-radius:20px;font-size:11px;">{{ p[2] }}</span></td>
+        <td><strong>Rs {{ "%.2f"|format(p[3]) }}</strong></td>
+        <td>{{ p[4] }}</td>
+        <td>
+          {% if p[5] == 'In Stock' %}
+            <span class="status in-stock">In Stock</span>
+          {% elif p[5] == 'Low Stock' %}
+            <span class="status low-stock">Low Stock</span>
+          {% else %}
+            <span class="status out-stock">Out of Stock</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;gap:6px;align-items:center;">
+            <a href="{{ url_for('edit_product', pid=p[0]) }}" class="btn btn-sm btn-warning">Edit</a>
+
+            <!-- RESTOCK -->
+            <button class="btn btn-sm btn-secondary" onclick="openRestock({{ p[0] }}, '{{ p[1] }}')">Restock</button>
+
+            {% if user.role == 'admin' %}
+            <form method="POST" action="{{ url_for('delete_product', pid=p[0]) }}" onsubmit="return confirm('Delete {{ p[1] }}?')">
+              <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+            </form>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div style="padding:40px;text-align:center;color:#9ca3af;">
+    <div style="font-size:40px;margin-bottom:12px;">📦</div>
+    <p>No products found.</p>
+    <a href="{{ url_for('add_product') }}" class="btn btn-primary" style="margin-top:12px;">Add First Product</a>
+  </div>
+  {% endif %}
+</div>
+
+<!-- RESTOCK MODAL -->
+<div class="modal-overlay" id="restockModal">
+  <div class="modal">
+    <h3>Restock Product</h3>
+    <p id="restockProductName" style="color:#6b7280;font-size:13px;margin-bottom:16px;"></p>
+    <form method="POST" id="restockForm">
+      <div class="form-group">
+        <label>Quantity to Add</label>
+        <input type="number" name="qty" min="1" value="10" required/>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" onclick="closeRestock()">Cancel</button>
+        <button type="submit" class="btn btn-primary">Add Stock</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+function openRestock(pid, name) {
+  document.getElementById("restockProductName").textContent = "Product: " + name;
+  document.getElementById("restockForm").action = "/products/restock/" + pid;
+  document.getElementById("restockModal").classList.add("show");
+}
+function closeRestock() {
+  document.getElementById("restockModal").classList.remove("show");
+}
+</script>
+
+{% endblock %}

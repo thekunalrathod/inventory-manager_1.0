@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- STAT CARDS -->
+<div class="stat-grid">
+  <div class="stat-card">
+    <div class="stat-label">Total Products</div>
+    <div class="stat-value">{{ stats.total }}</div>
+    <div class="stat-sub">All items in inventory</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-label">In Stock</div>
+    <div class="stat-value" style="color:#065f46">{{ stats.in_stock }}</div>
+    <div class="stat-sub">Ready to sell</div>
+  </div>
+  <div class="stat-card warn">
+    <div class="stat-label">Low Stock</div>
+    <div class="stat-value" style="color:#92400e">{{ stats.low_stock }}</div>
+    <div class="stat-sub">Needs restocking soon</div>
+  </div>
+  <div class="stat-card danger">
+    <div class="stat-label">Out of Stock</div>
+    <div class="stat-value" style="color:#991b1b">{{ stats.out_of_stock }}</div>
+    <div class="stat-sub">Unavailable items</div>
+  </div>
+</div>
+
+<!-- INVENTORY VALUE BANNER -->
+<div style="background:linear-gradient(135deg,#1a2a4a,#0d7377);color:#fff;border-radius:10px;padding:20px 28px;margin-bottom:24px;display:flex;align-items:center;justify-content:space-between;">
+  <div>
+    <div style="font-size:12px;opacity:0.7;text-transform:uppercase;letter-spacing:1px;">Total Inventory Value</div>
+    <div style="font-size:32px;font-weight:800;margin-top:4px;">Rs {{ "{:,.2f}".format(stats.total_value) }}</div>
+  </div>
+  <div style="display:flex;gap:10px;">
+    <a href="{{ url_for('export_to_excel') }}" style="background:rgba(255,255,255,0.15);color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;">⬇ Excel</a>
+    <a href="{{ url_for('export_to_pdf') }}"   style="background:rgba(255,255,255,0.15);color:#fff;padding:10px 18px;border-radius:8px;text-decoration:none;font-size:13px;font-weight:500;">⬇ PDF</a>
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+
+  <!-- LOW STOCK ALERTS -->
+  <div class="card">
+    <div class="card-header">
+      <h3>⚠️ Low Stock Alerts</h3>
+      <a href="{{ url_for('products') }}?status=Low+Stock" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    {% if low_stock %}
+    <table>
+      <thead><tr><th>Product</th><th>Category</th><th>Qty</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in low_stock %}
+        <tr>
+          <td><strong>{{ p[1] }}</strong></td>
+          <td>{{ p[2] }}</td>
+          <td>{{ p[3] }}</td>
+          <td>
+            {% if p[4] == 'Out of Stock' %}
+              <span class="status out-stock">Out of Stock</span>
+            {% else %}
+              <span class="status low-stock">Low Stock</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div style="padding:24px;text-align:center;color:#9ca3af;font-size:13px;">
+      ✅ All products have sufficient stock!
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- RECENTLY UPDATED -->
+  <div class="card">
+    <div class="card-header">
+      <h3>🕐 Recently Updated</h3>
+      <a href="{{ url_for('products') }}" class="btn btn-sm btn-outline">View All</a>
+    </div>
+    <table>
+      <thead><tr><th>Product</th><th>Price</th><th>Qty</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for p in recent %}
+        <tr>
+          <td><strong>{{ p[1] }}</strong><br><small style="color:#9ca3af">{{ p[2] }}</small></td>
+          <td>Rs {{ "%.2f"|format(p[3]) }}</td>
+          <td>{{ p[4] }}</td>
+          <td>
+            {% if p[5] == 'In Stock' %}
+              <span class="status in-stock">In Stock</span>
+            {% elif p[5] == 'Low Stock' %}
+              <span class="status low-stock">Low Stock</span>
+            {% else %}
+              <span class="status out-stock">Out of Stock</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+</div>
+
+<!-- QUICK ADD BUTTON -->
+<div style="margin-top:20px;">
+  <a href="{{ url_for('add_product') }}" class="btn btn-primary">+ Add New Product</a>
+</div>
+
+{% endblock %}

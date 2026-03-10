@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Login — Inventory System</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',sans-serif; background:linear-gradient(135deg,#1a2a4a 0%,#0d7377 100%); min-height:100vh; display:flex; align-items:center; justify-content:center; }
+  .login-box { background:#fff; border-radius:16px; padding:40px; width:380px; box-shadow:0 20px 60px rgba(0,0,0,0.3); }
+  .login-logo { text-align:center; margin-bottom:28px; }
+  .login-logo h1 { font-size:28px; color:#1a2a4a; font-weight:800; }
+  .login-logo p  { color:#6b7280; font-size:13px; margin-top:4px; }
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px; }
+  .form-group input { width:100%; padding:11px 14px; border:1.5px solid #d1d5db; border-radius:8px; font-size:14px; outline:none; transition:border 0.2s; }
+  .form-group input:focus { border-color:#0d7377; box-shadow:0 0 0 3px rgba(13,115,119,0.1); }
+  .btn-login { width:100%; padding:12px; background:#0d7377; color:#fff; border:none; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer; margin-top:8px; transition:background 0.2s; }
+  .btn-login:hover { background:#0a5c60; }
+  .alert { padding:10px 14px; background:#fee2e2; color:#991b1b; border-radius:6px; margin-bottom:16px; font-size:13px; }
+  .default-creds { margin-top:20px; padding:12px; background:#f0fdf4; border-radius:8px; text-align:center; font-size:12px; color:#065f46; border:1px dashed #6ee7b7; }
+  .default-creds strong { display:block; margin-bottom:4px; font-size:13px; }
+</style>
+</head>
+<body>
+<div class="login-box">
+  <div class="login-logo">
+    <h1>📦 InvManager</h1>
+    <p>Inventory Management System</p>
+  </div>
+
+  {% if error %}
+  <div class="alert">{{ error }}</div>
+  {% endif %}
+
+  <form method="POST">
+    <div class="form-group">
+      <label>Username</label>
+      <input type="text" name="username" placeholder="Enter username" required autofocus/>
+    </div>
+    <div class="form-group">
+      <label>Password</label>
+      <input type="password" name="password" placeholder="Enter password" required/>
+    </div>
+    <button type="submit" class="btn-login">Login →</button>
+  </form>
+
+  <div class="default-creds">
+    <strong>Default Login Credentials</strong>
+    Username: <b>admin</b> &nbsp;|&nbsp; Password: <b>admin123</b>
+  </div>
+</div>
+</body>
+</html>

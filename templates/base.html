@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>{% block title %}Inventory System{% endblock %}</title>
+<style>
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Segoe UI',sans-serif; background:#f0f2f5; color:#333; display:flex; min-height:100vh; }
+
+  /* SIDEBAR */
+  .sidebar { width:240px; background:#1a2a4a; color:#fff; display:flex; flex-direction:column; position:fixed; height:100vh; z-index:100; }
+  .sidebar-logo { padding:24px 20px; border-bottom:1px solid rgba(255,255,255,0.1); }
+  .sidebar-logo h2 { font-size:16px; font-weight:700; color:#fff; }
+  .sidebar-logo p  { font-size:11px; color:rgba(255,255,255,0.5); margin-top:2px; }
+  .sidebar-nav { flex:1; padding:16px 0; }
+  .nav-label { font-size:10px; color:rgba(255,255,255,0.4); padding:8px 20px 4px; text-transform:uppercase; letter-spacing:1px; }
+  .nav-item { display:flex; align-items:center; gap:10px; padding:10px 20px; color:rgba(255,255,255,0.7); text-decoration:none; font-size:14px; transition:all 0.2s; }
+  .nav-item:hover, .nav-item.active { background:rgba(255,255,255,0.1); color:#fff; border-left:3px solid #0d7377; }
+  .nav-item svg { width:18px; height:18px; flex-shrink:0; }
+  .sidebar-footer { padding:16px 20px; border-top:1px solid rgba(255,255,255,0.1); font-size:12px; color:rgba(255,255,255,0.5); }
+  .sidebar-footer strong { color:#fff; display:block; }
+
+  /* MAIN */
+  .main { margin-left:240px; flex:1; display:flex; flex-direction:column; min-height:100vh; }
+  .topbar { background:#fff; padding:16px 28px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #e5e7eb; }
+  .topbar h1 { font-size:20px; font-weight:700; color:#1a2a4a; }
+  .topbar-right { display:flex; align-items:center; gap:12px; }
+  .badge { background:#0d7377; color:#fff; padding:4px 10px; border-radius:20px; font-size:11px; font-weight:600; text-transform:uppercase; }
+  .content { padding:28px; flex:1; }
+
+  /* CARDS */
+  .stat-grid { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:24px; }
+  .stat-card { background:#fff; border-radius:10px; padding:20px; box-shadow:0 1px 3px rgba(0,0,0,0.06); border-left:4px solid #0d7377; }
+  .stat-card.warn  { border-color:#f59e0b; }
+  .stat-card.danger{ border-color:#ef4444; }
+  .stat-card.info  { border-color:#3b82f6; }
+  .stat-label { font-size:12px; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; }
+  .stat-value { font-size:28px; font-weight:700; color:#1a2a4a; margin-top:4px; }
+  .stat-sub   { font-size:12px; color:#9ca3af; margin-top:2px; }
+
+  /* TABLE */
+  .card { background:#fff; border-radius:10px; box-shadow:0 1px 3px rgba(0,0,0,0.06); overflow:hidden; margin-bottom:20px; }
+  .card-header { padding:16px 20px; border-bottom:1px solid #f3f4f6; display:flex; align-items:center; justify-content:space-between; }
+  .card-header h3 { font-size:15px; font-weight:600; color:#1a2a4a; }
+  table { width:100%; border-collapse:collapse; }
+  th { background:#f8fafc; padding:10px 16px; text-align:left; font-size:11px; font-weight:600; color:#6b7280; text-transform:uppercase; letter-spacing:0.5px; border-bottom:1px solid #e5e7eb; }
+  td { padding:12px 16px; font-size:13px; border-bottom:1px solid #f3f4f6; }
+  tr:last-child td { border:none; }
+  tr:hover td { background:#f9fafb; }
+
+  /* STATUS BADGES */
+  .status { padding:3px 10px; border-radius:20px; font-size:11px; font-weight:600; display:inline-block; }
+  .status.in-stock   { background:#d1fae5; color:#065f46; }
+  .status.low-stock  { background:#fef3c7; color:#92400e; }
+  .status.out-stock  { background:#fee2e2; color:#991b1b; }
+
+  /* BUTTONS */
+  .btn { padding:8px 16px; border-radius:6px; border:none; cursor:pointer; font-size:13px; font-weight:500; text-decoration:none; display:inline-flex; align-items:center; gap:6px; transition:all 0.2s; }
+  .btn-primary  { background:#0d7377; color:#fff; }
+  .btn-primary:hover  { background:#0a5c60; }
+  .btn-danger   { background:#ef4444; color:#fff; }
+  .btn-danger:hover   { background:#dc2626; }
+  .btn-warning  { background:#f59e0b; color:#fff; }
+  .btn-warning:hover  { background:#d97706; }
+  .btn-secondary{ background:#f3f4f6; color:#374151; }
+  .btn-secondary:hover{ background:#e5e7eb; }
+  .btn-sm { padding:5px 10px; font-size:12px; }
+  .btn-outline { background:transparent; border:1px solid #0d7377; color:#0d7377; }
+  .btn-outline:hover { background:#0d7377; color:#fff; }
+
+  /* FORMS */
+  .form-group { margin-bottom:16px; }
+  .form-group label { display:block; font-size:13px; font-weight:500; color:#374151; margin-bottom:6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width:100%; padding:9px 12px; border:1px solid #d1d5db; border-radius:6px;
+    font-size:13px; outline:none; transition:border 0.2s;
+  }
+  .form-group input:focus, .form-group select:focus { border-color:#0d7377; box-shadow:0 0 0 2px rgba(13,115,119,0.1); }
+  .form-grid { display:grid; grid-template-columns:1fr 1fr; gap:16px; }
+  .form-card { background:#fff; border-radius:10px; padding:24px; box-shadow:0 1px 3px rgba(0,0,0,0.06); max-width:700px; }
+
+  /* SEARCH BAR */
+  .search-bar { display:flex; gap:10px; margin-bottom:20px; align-items:center; flex-wrap:wrap; }
+  .search-bar input, .search-bar select { padding:8px 12px; border:1px solid #d1d5db; border-radius:6px; font-size:13px; }
+  .search-bar input { min-width:220px; }
+
+  /* ALERTS */
+  .alert { padding:12px 16px; border-radius:6px; margin-bottom:16px; font-size:13px; }
+  .alert-danger { background:#fee2e2; color:#991b1b; border:1px solid #fca5a5; }
+
+  /* MODAL */
+  .modal-overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.5); z-index:200; align-items:center; justify-content:center; }
+  .modal-overlay.show { display:flex; }
+  .modal { background:#fff; border-radius:10px; padding:24px; width:360px; }
+  .modal h3 { margin-bottom:12px; color:#1a2a4a; }
+  .modal-footer { display:flex; gap:10px; margin-top:16px; justify-content:flex-end; }
+
+  /* RESPONSIVE */
+  @media(max-width:768px){
+    .sidebar { width:60px; }
+    .sidebar-logo p, .nav-item span, .sidebar-footer, .nav-label { display:none; }
+    .main { margin-left:60px; }
+    .stat-grid { grid-template-columns:1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <h2>📦 InvManager</h2>
+    <p>Inventory System</p>
+  </div>
+  <nav class="sidebar-nav">
+    <div class="nav-label">Main</div>
+    <a href="{{ url_for('dashboard') }}" class="nav-item {% if request.endpoint=='dashboard' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+      <span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('products') }}" class="nav-item {% if request.endpoint in ['products','add_product','edit_product'] %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+      <span>Products</span>
+    </a>
+    <div class="nav-label">Reports</div>
+    <a href="{{ url_for('export_to_excel') }}" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+      <span>Export Excel</span>
+    </a>
+    <a href="{{ url_for('export_to_pdf') }}" class="nav-item">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+      <span>Export PDF</span>
+    </a>
+    {% if user.role == 'admin' %}
+    <div class="nav-label">Admin</div>
+    <a href="{{ url_for('users') }}" class="nav-item {% if request.endpoint=='users' %}active{% endif %}">
+      <svg fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+      <span>Users</span>
+    </a>
+    {% endif %}
+  </nav>
+  <div class="sidebar-footer">
+    <strong>{{ user.username }}</strong>
+    <span>{{ user.role | capitalize }}</span>
+    <a href="{{ url_for('logout') }}" style="color:rgba(255,255,255,0.5);font-size:11px;display:block;margin-top:6px;">Logout →</a>
+  </div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <h1>{% block page_title %}Dashboard{% endblock %}</h1>
+    <div class="topbar-right">
+      <span class="badge">{{ user.role }}</span>
+      <a href="{{ url_for('logout') }}" class="btn btn-secondary btn-sm">Logout</a>
+    </div>
+  </div>
+  <div class="content">
+    {% block content %}{% endblock %}
+  </div>
+</div>
+
+</body>
+</html>
